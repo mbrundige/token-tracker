@@ -1,15 +1,20 @@
 {
   "name": "@mbrundige/token-tracker",
-  "version": "0.2.0",
-  "description": "Local Cursor/Claude skill that snapshots AI token usage by project and feature, with an optional CLI status line.",
+  "version": "0.3.0",
+  "description": "Local token usage tracker for Cursor, Claude Code, Gemini CLI, Codex, Continue, and Agent Skills hosts — with an optional Cursor CLI status line.",
   "bin": {
     "token-tracker": "bin/token-tracker.js"
   },
   "files": [
     "bin",
     "scripts",
+    "templates",
     "cursor/SKILL.md",
     "claude/SKILL.md",
+    "gemini/SKILL.md",
+    "codex/SKILL.md",
+    "agents/SKILL.md",
+    "continue/SKILL.md",
     "docs/screenshots",
     "README.md",
     "LICENSE"
@@ -28,6 +33,10 @@
   "keywords": [
     "cursor",
     "claude-code",
+    "gemini-cli",
+    "codex",
+    "continue",
+    "agent-skills",
     "token-tracking",
     "statusline",
     "ai-usage"

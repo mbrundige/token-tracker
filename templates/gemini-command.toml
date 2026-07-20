@@ -1,0 +1,16 @@
+# Invoked via: /token-tracker
+description = "Report local AI token usage by feature with a daily heat map."
+
+prompt = """
+You are helping with local token usage tracking via token-tracker.
+
+1. Run the report below and present its output verbatim to the user (feature breakdown + heat map).
+2. Then ask once: "Also save a usage snapshot for the current feature?"
+3. Default to not saving if the user does not answer.
+4. Do not save secrets, raw prompts, or transcript contents.
+
+If the user already asked to save, set feature/project, or otherwise act on history, do that instead of or in addition to the report using the scripts under `{{SKILL_ROOT}}/scripts/`.
+
+Report output:
+!{node "{{REPORT_SCRIPT}}"}
+"""

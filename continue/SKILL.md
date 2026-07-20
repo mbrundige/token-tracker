@@ -12,7 +12,7 @@ Works across Cursor, Claude Code, Gemini CLI, Codex, Continue, and other Agent S
 When the user invokes `/token-tracker` or `$token-tracker` (with no other request), run the report and show the output:
 
 ```bash
-~/.cursor/skills/token-tracker/scripts/report-token-usage.js
+~/.continue/skills/token-tracker/scripts/report-token-usage.js
 ```
 
 Present the report as-is (feature breakdown + GitHub-style daily heat map). Then ask once:
@@ -45,7 +45,7 @@ Default to not saving if the user does not answer. Do not save secrets, raw prom
 2. Run:
 
 ```bash
-~/.cursor/skills/token-tracker/scripts/save-token-usage.js --json '<snapshot-json>'
+~/.continue/skills/token-tracker/scripts/save-token-usage.js --json '<snapshot-json>'
 ```
 
 3. Tell the user the snapshot was saved to `~/.cursor/token-tracker/history.jsonl`.
@@ -77,13 +77,13 @@ Feature names resolve in this order:
 Set feature:
 
 ```bash
-~/.cursor/skills/token-tracker/scripts/set-token-context.js --workspace "$PWD" --feature "maintenance"
+~/.continue/skills/token-tracker/scripts/set-token-context.js --workspace "$PWD" --feature "maintenance"
 ```
 
 ## Status Line (Cursor CLI)
 
 ```bash
-~/.cursor/skills/token-tracker/scripts/statusline-token-usage.js
+~/.continue/skills/token-tracker/scripts/statusline-token-usage.js
 ```
 
 Fields are controlled by `~/.cursor/token-tracker/config.json` under `statusline`. Cursor CLI can wire this via `cli-config.json` `statusLine`. Other hosts can still call the same script when they expose a status hook.
