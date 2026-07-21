@@ -86,4 +86,7 @@ Set feature:
 ~/.continue/skills/token-tracker/scripts/statusline-token-usage.js
 ```
 
-Fields are controlled by `~/.cursor/token-tracker/config.json` under `statusline`. Cursor CLI can wire this via `cli-config.json` `statusLine`. Other hosts can still call the same script when they expose a status hook.
+Fields are controlled by `~/.cursor/token-tracker/config.json` under `statusline`.
+Cursor CLI can wire this via `cli-config.json` `statusLine`. Other hosts can still call the same script when they expose a status hook.
+
+Estimated cost uses `~/.cursor/token-tracker/prices.json` (USD per 1M input/output tokens, matched by model name substring). Feature cost in the report is epoch-aware: it prices token deltas between snapshots and resets when totals drop.

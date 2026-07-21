@@ -41,7 +41,8 @@ Switching project or feature resets the status-line counter for that scope, so e
 - **Shared history** across hosts (one JSONL ledger under `~/.cursor/token-tracker/`)
 - **`/token-tracker` skill** — run the report (and optionally save a snapshot) from chat
 - **Gemini custom command** — installs `~/.gemini/commands/token-tracker.toml` for `/token-tracker`
-- **Feature-scoped status line** — project, feature, model, context bar, token count (Cursor CLI)
+- **Feature-scoped status line** — project, feature, model, context bar, token count, estimated cost
+- **Estimated cost per feature** — from `prices.json` rates × prompt/completion deltas (epoch-aware)
 - **Epoch-aware totals** — feature resets do not double-count growing snapshots
 - **Zero runtime deps** — plain Node.js 22+ scripts
 
@@ -133,7 +134,7 @@ npx @mbrundige/token-tracker set-context \
 npx @mbrundige/token-tracker report
 ```
 
-Shows usage by feature (with bar chart) and a daily heat map.
+Shows usage by feature (token bar chart + estimated cost) and a daily heat map.
 
 In chat, invoke the skill:
 
@@ -171,7 +172,7 @@ You can also pass a full JSON object with `--json '...'` or on stdin. Snapshots 
 Cursor CLI can show a live line like:
 
 ```text
-token-tracker | token-tracker/readme-demos | GPT-5.5 | ctx [###.......] 27% | toks 7.1k
+token-tracker | token-tracker/readme-demos | GPT-5.5 | ctx [###.......] 27% | toks 7.1k | $0.0534
 ```
 
 Configure visible fields in `~/.cursor/token-tracker/config.json`:
@@ -186,12 +187,36 @@ Configure visible fields in `~/.cursor/token-tracker/config.json`:
     "show_model": true,
     "show_context": true,
     "show_tokens": true,
-    "show_cost": false
+    "show_cost": true
   }
 }
 ```
 
-Optional estimated cost uses `~/.cursor/token-tracker/prices.json` when `show_cost` is `true`.
+### Estimated cost
+
+Cost is **feature-scoped**, same as `toks`:
+
+1. Status line uses current feature prompt/completion totals × rates for the active model
+2. Report walks history chronologically, prices **positive token deltas** between snapshots, and starts a new epoch when totals drop (feature reset)
+
+Rates live in `~/.cursor/token-tracker/prices.json` (seeded on install from `templates/prices.json`):
+
+```json
+{
+  "default": {
+    "input_per_million_usd": 2.5,
+    "output_per_million_usd": 15
+  },
+  "models": {
+    "gpt-5.5": { "input_per_million_usd": 5, "output_per_million_usd": 30 },
+    "claude opus": { "input_per_million_usd": 5, "output_per_million_usd": 25 }
+  }
+}
+```
+
+Model keys are case-insensitive **substrings** of the model display name; the longest match wins. These are API list-price estimates — Cursor/Claude subscriptions may bill differently, so edit the file to match your reality.
+
+Set `"show_cost": false` to hide cost on the status line. The report still prints a cost column whenever prices are available.
 
 Test it manually:
 
@@ -245,7 +270,7 @@ node scripts/check.js
 | --- | --- |
 | `~/.cursor/token-tracker/config.json` | Project/feature map + status line options |
 | `~/.cursor/token-tracker/history.jsonl` | Append-only usage snapshots (all hosts) |
-| `~/.cursor/token-tracker/prices.json` | Optional model price table for cost estimates |
+| `~/.cursor/token-tracker/prices.json` | Model rate table for estimated cost (seeded on install) |
 | `~/.gemini/commands/token-tracker.toml` | Gemini `/token-tracker` custom command (when `--gemini`) |
 
 Override paths with `TOKEN_TRACKER_CONFIG`, `TOKEN_TRACKER_HISTORY`, and `TOKEN_TRACKER_PRICES`.
@@ -255,8 +280,8 @@ Override paths with `TOKEN_TRACKER_CONFIG`, `TOKEN_TRACKER_HISTORY`, and `TOKEN_
 | Path | Role |
 | --- | --- |
 | `bin/token-tracker.js` | npx CLI (`install`, `save`, `set-context`, `statusline`, `report`) |
-| `scripts/` | Shared Node helpers |
-| `templates/` | Skill + Gemini command templates used by `install` |
+| `scripts/` | Shared Node helpers (`pricing.js`, report, statusline, …) |
+| `templates/` | Skill, Gemini command, and default `prices.json` templates used by `install` |
 | `cursor/`, `claude/`, `gemini/`, `codex/`, `agents/`, `continue/` | Checked-in `SKILL.md` copies per host |
 | `docs/screenshots/` | README terminal demos |
 | `docs/logos/` | Host badges + project wordmark |

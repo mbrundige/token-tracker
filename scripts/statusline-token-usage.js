@@ -5,6 +5,11 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
+const {
+  loadPrices,
+  estimateCostUsdForModel,
+  formatCost,
+} = require("./pricing.js");
 
 const DATA_DIR = path.join(os.homedir(), ".cursor", "token-tracker");
 
@@ -166,7 +171,7 @@ function appendHistory(row) {
   fs.appendFileSync(HISTORY_PATH, `${JSON.stringify(row)}\n`, "utf8");
 }
 
-function autoSaveSnapshot(payload, rows, project, feature, model, inputTokens, outputTokens, usedPct) {
+function autoSaveSnapshot(payload, rows, project, feature, model, inputTokens, outputTokens, usedPct, costUsd) {
   const totalTokens = inputTokens + outputTokens;
   if (totalTokens <= 0) return false;
   const sessionKey = String(payload.session_id || payload.transcript_path || "unknown-session");
@@ -191,6 +196,9 @@ function autoSaveSnapshot(payload, rows, project, feature, model, inputTokens, o
     },
   };
   if (feature) snapshot.feature = feature;
+  if (costUsd != null && Number.isFinite(costUsd)) {
+    snapshot.estimated_cost_usd = Number(costUsd.toFixed(6));
+  }
   appendHistory(snapshot);
   return true;
 }
@@ -210,39 +218,6 @@ function contextBar(usedPct) {
   return `ctx [${"#".repeat(filled)}${".".repeat(width - filled)}] ${clamped}%`;
 }
 
-function parseRates(rates) {
-  try {
-    return [Number(rates.input_per_million_usd), Number(rates.output_per_million_usd)];
-  } catch {
-    return null;
-  }
-}
-
-function ratesForModel(prices, model) {
-  const models = prices.models;
-  if (models && typeof models === "object") {
-    const modelLower = model.toLowerCase();
-    for (const [pattern, rates] of Object.entries(models)) {
-      if (modelLower.includes(String(pattern).toLowerCase()) && rates && typeof rates === "object") {
-        const parsed = parseRates(rates);
-        if (parsed && !Number.isNaN(parsed[0]) && !Number.isNaN(parsed[1])) return parsed;
-      }
-    }
-  }
-  if (prices.default && typeof prices.default === "object") {
-    const parsed = parseRates(prices.default);
-    if (parsed && !Number.isNaN(parsed[0]) && !Number.isNaN(parsed[1])) return parsed;
-  }
-  return null;
-}
-
-function estimateCost(inputTokens, outputTokens, model) {
-  const rates = ratesForModel(loadJsonFile(PRICES_PATH), model);
-  if (!rates) return "cost unpriced";
-  const cost = (inputTokens / 1_000_000) * rates[0] + (outputTokens / 1_000_000) * rates[1];
-  return `est $${cost.toFixed(4)}`;
-}
-
 function statuslineOptions(config) {
   const options = config.statusline && typeof config.statusline === "object" ? config.statusline : {};
   return {
@@ -253,7 +228,7 @@ function statuslineOptions(config) {
     show_model: options.show_model !== false,
     show_context: options.show_context !== false,
     show_tokens: options.show_tokens !== false,
-    show_cost: options.show_cost === true,
+    show_cost: options.show_cost !== false,
   };
 }
 
@@ -277,6 +252,14 @@ function main() {
     sessionOut,
   );
 
+  const prices = loadPrices(PRICES_PATH);
+  const costUsd = estimateCostUsdForModel(
+    prices,
+    model,
+    featureTokens.inputTokens,
+    featureTokens.outputTokens,
+  );
+
   const rows = iterHistory();
   autoSaveSnapshot(
     payload,
@@ -287,6 +270,7 @@ function main() {
     featureTokens.inputTokens,
     featureTokens.outputTokens,
     usedPct,
+    costUsd,
   );
 
   const ctx = contextBar(usedPct);
@@ -299,7 +283,7 @@ function main() {
   if (options.show_context) parts.push(ctx);
   if (options.show_tokens) parts.push(toks);
   if (options.show_cost) {
-    parts.push(estimateCost(featureTokens.inputTokens, featureTokens.outputTokens, model));
+    parts.push(formatCost(costUsd, { prefix: "$", unpriced: "$?" }));
   }
   console.log(parts.join(" | "));
 }

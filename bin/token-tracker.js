@@ -24,7 +24,7 @@ const DEFAULT_CONFIG = {
     show_model: true,
     show_context: true,
     show_tokens: true,
-    show_cost: false,
+    show_cost: true,
   },
 };
 
@@ -69,6 +69,7 @@ const SCRIPT_FILES = [
   "set-token-context.js",
   "statusline-token-usage.js",
   "report-token-usage.js",
+  "pricing.js",
 ];
 
 function usage() {
@@ -102,6 +103,17 @@ function ensureConfig() {
     return { created: true, configPath };
   }
   return { created: false, configPath };
+}
+
+function ensurePrices() {
+  const pricesPath = path.join(DATA_DIR, "prices.json");
+  const template = path.join(ROOT, "templates", "prices.json");
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  if (!fs.existsSync(pricesPath)) {
+    fs.copyFileSync(template, pricesPath);
+    return { created: true, pricesPath };
+  }
+  return { created: false, pricesPath };
 }
 
 function renderTemplate(template, vars) {
@@ -200,6 +212,7 @@ function install(argv) {
   const keys = selectedTargets(argv);
   const installed = keys.map((key) => installSkill(key));
   const { created, configPath } = ensureConfig();
+  const { created: pricesCreated, pricesPath } = ensurePrices();
 
   const cursorInstall = installed.find((item) => item.dest.includes(`${path.sep}.cursor${path.sep}`));
   const wantsStatusline =
@@ -216,6 +229,7 @@ function install(argv) {
 
   const notes = [];
   if (statuslineWired) notes.push("Restart Cursor CLI to pick up statusLine changes.");
+  if (pricesCreated) notes.push(`Seeded default price table at ${pricesPath}.`);
   if (keys.includes("gemini")) notes.push("In Gemini CLI run /commands reload and /skills reload.");
   if (keys.includes("codex") || keys.includes("agents") || keys.includes("continue")) {
     notes.push("Restart Codex/Continue (or reload skills) if the new skill does not appear.");
@@ -231,6 +245,8 @@ function install(argv) {
         })),
         config: configPath,
         config_created: created,
+        prices: pricesPath,
+        prices_created: pricesCreated,
         statusline: statuslinePath,
         statusline_wired: statuslineWired,
         note: notes.length ? notes.join(" ") : undefined,
