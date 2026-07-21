@@ -2,16 +2,17 @@
 "use strict";
 
 const fs = require("fs");
-const os = require("os");
 const path = require("path");
 const { loadPrices, formatCost, epochFeatureCost } = require("./pricing.js");
 const { schedulePricePullIfStale, priceRefreshOptions } = require("./pull-prices.js");
 const { paths, expand } = require("./paths.js");
+const { createAnsi } = require("./ansi.js");
 
 const { historyPath: HISTORY_PATH, configPath: CONFIG_PATH, pricesPath: PRICES_PATH } = paths();
 
 const HEAT = ["·", "░", "▒", "▓", "█"];
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const ansi = createAnsi();
 
 function compact(n) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -165,27 +166,35 @@ function renderHeatmap(byDay, weeks = 16) {
   }
 
   const lines = [];
-  lines.push(`Token heat map (last ${columns.length} weeks, UTC)`);
-  lines.push("     " + columns.map((_, i) => (i % 4 === 0 ? String(i + 1).padStart(2, " ") : "  ")).join(""));
+  lines.push(ansi.bold(`Token heat map (last ${columns.length} weeks, UTC)`));
+  lines.push(
+    ansi.dim("     " + columns.map((_, i) => (i % 4 === 0 ? String(i + 1).padStart(2, " ") : "  ")).join("")),
+  );
 
   for (let dow = 0; dow < 7; dow += 1) {
     const label = DAY_LABELS[dow].padEnd(4, " ");
-    let row = `${label} `;
+    let row = `${ansi.dim(label)} `;
     for (const col of columns) {
       const cell = col.find((d) => d.dow === dow);
-      row += cell ? `${HEAT[heatLevel(cell.value, max)]} ` : "  ";
+      if (!cell) {
+        row += "  ";
+        continue;
+      }
+      const level = heatLevel(cell.value, max);
+      row += `${ansi.heat(level, HEAT[level])} `;
     }
     lines.push(row.trimEnd());
   }
 
   lines.push("");
-  lines.push(`less ${HEAT.join(" ")} more   max/day ${compact(max)} toks`);
+  const legend = HEAT.map((ch, i) => ansi.heat(i, ch)).join(" ");
+  lines.push(`${ansi.dim("less")} ${legend} ${ansi.dim("more")}   ${ansi.dim(`max/day ${compact(max)} toks`)}`);
   return lines.join("\n");
 }
 
 function renderFeatureTable(features) {
   if (!features.length) return "No token history yet.";
-  const lines = ["By feature", "----------"];
+  const lines = [ansi.bold("By feature"), ansi.dim("----------")];
   const grand = features.reduce((s, f) => s + f.total, 0);
   const grandCost = features.reduce((s, f) => s + (f.costUsd || 0), 0);
   const anyCost = features.some((f) => f.costUsd != null);
@@ -196,14 +205,14 @@ function renderFeatureTable(features) {
     const pct = grand ? Math.round((f.total / grand) * 100) : 0;
     const barWidth = 20;
     const filled = grand ? Math.round((f.total / grand) * barWidth) : 0;
-    const bar = `[${"#".repeat(filled)}${".".repeat(barWidth - filled)}]`;
-    const costCell = anyCost
+    const bar = `[${ansi.cyan("#".repeat(filled))}${ansi.dim(".".repeat(barWidth - filled))}]`;
+    const costRaw = anyCost
       ? formatCost(f.costUsd, { prefix: "$", unpriced: "  n/a" }).padStart(8, " ")
       : null;
     const approx = f.costApproximate && f.costUsd != null ? "~" : " ";
-    const costPart = costCell != null ? `  ${approx}${costCell}` : "";
+    const costAligned = costRaw == null ? "" : `  ${approx}${ansi.green(costRaw)}`;
     lines.push(
-      `${label.padEnd(36, " ")} ${compact(f.total).padStart(7, " ")}  ${String(pct).padStart(3, " ")}%${costPart}  ${bar}`,
+      `${label.padEnd(36, " ")} ${ansi.bold(compact(f.total).padStart(7, " "))}  ${String(pct).padStart(3, " ")}%${costAligned}  ${bar}`,
     );
   }
   lines.push("");
@@ -216,11 +225,15 @@ function renderFeatureTable(features) {
     if (anyApprox) bits.push("some rows lack prompt/completion split");
     const note = bits.length ? ` (${bits.join(", ")})` : "";
     lines.push(
-      `Total tracked: ${compact(grand)} toks / ${formatCost(grandCost)} est across ${features.length} feature(s)${note}`,
+      `Total tracked: ${ansi.bold(compact(grand))} toks / ${ansi.green(formatCost(grandCost))} est across ${features.length} feature(s)${ansi.dim(note)}`,
     );
   } else {
-    lines.push(`Total tracked: ${compact(grand)} toks across ${features.length} feature(s)`);
-    lines.push("Cost: n/a (add ~/.token-tracker/prices.json or run: npx @mbrundige/token-tracker prices pull)");
+    lines.push(`Total tracked: ${ansi.bold(compact(grand))} toks across ${features.length} feature(s)`);
+    lines.push(
+      ansi.dim(
+        "Cost: n/a (add ~/.token-tracker/prices.json or run: npx @mbrundige/token-tracker prices pull)",
+      ),
+    );
   }
   return lines.join("\n");
 }
@@ -248,13 +261,15 @@ function main() {
   const features = featureBreakdown(rows, prices);
   const byDay = dailyTotals(rows);
 
-  console.log("Token Tracker Report");
-  console.log("====================");
-  console.log(`History: ${HISTORY_PATH}`);
-  console.log(`Prices:  ${PRICES_PATH}${fs.existsSync(PRICES_PATH) ? "" : " (missing)"}`);
-  if (prices.updated_at) console.log(`Price as of: ${prices.updated_at}`);
+  console.log(ansi.bold(ansi.cyan("Token Tracker Report")));
+  console.log(ansi.dim("===================="));
+  console.log(`${ansi.dim("History:")} ${HISTORY_PATH}`);
   console.log(
-    `Current scope: ${scope.project}${scope.feature ? `/${scope.feature}` : ""}`,
+    `${ansi.dim("Prices:")}  ${PRICES_PATH}${fs.existsSync(PRICES_PATH) ? "" : ansi.yellow(" (missing)")}`,
+  );
+  if (prices.updated_at) console.log(`${ansi.dim("Price as of:")} ${prices.updated_at}`);
+  console.log(
+    `${ansi.dim("Current scope:")} ${ansi.cyan(`${scope.project}${scope.feature ? `/${scope.feature}` : ""}`)}`,
   );
   console.log("");
   console.log(renderFeatureTable(features));

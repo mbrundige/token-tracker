@@ -91,6 +91,7 @@ const SCRIPT_FILES = [
   "pricing.js",
   "pull-prices.js",
   "paths.js",
+  "ansi.js",
 ];
 
 function usage() {
