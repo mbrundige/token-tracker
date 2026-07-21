@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const { loadPrices, formatCost, epochFeatureCost } = require("./pricing.js");
 const { schedulePricePullIfStale, priceRefreshOptions } = require("./pull-prices.js");
-const { paths, expand } = require("./paths.js");
+const { paths } = require("./paths.js");
 const { createAnsi } = require("./ansi.js");
 
 const { historyPath: HISTORY_PATH, configPath: CONFIG_PATH, pricesPath: PRICES_PATH } = paths();
