@@ -330,11 +330,33 @@ Override paths with `TOKEN_TRACKER_HOME`, `TOKEN_TRACKER_CONFIG`, `TOKEN_TRACKER
 | `bin/token-tracker.js` | npx CLI (`install`, `save`, `set-context`, `statusline`, `report`) |
 | `scripts/` | Shared Node helpers (`pricing.js`, report, statusline, …) |
 | `templates/` | Skill, Gemini command, and default `prices.json` templates used by `install` |
+| `.github/workflows/` | CI checks + npm publish on `v*` tags |
 | `cursor/`, `claude/`, `gemini/`, `codex/`, `agents/`, `continue/` | Checked-in `SKILL.md` copies per host |
 | `docs/screenshots/` | README terminal demos |
 | `docs/logos/` | Host badges + project wordmark |
 
 ## Publish (maintainers)
+
+Releases publish to **npm** automatically when you push a version tag that matches `package.json`.
+
+1. Bump `"version"` in `package.json` (and merge to `main`).
+2. Add a repo secret **`NPM_TOKEN`** (npm access token with publish rights for `@mbrundige`).
+3. Tag and push:
+
+```bash
+VERSION=$(node -p "require('./package.json').version")
+git tag "v${VERSION}"
+git push origin "v${VERSION}"
+```
+
+The [Publish npm](.github/workflows/publish-npm.yml) workflow then:
+
+- checks that the tag (`v0.4.0`) matches `package.json`
+- runs `node scripts/check.js`
+- runs `npm publish --access public --provenance`
+- creates a GitHub Release with generated notes
+
+Manual publish still works if needed:
 
 ```bash
 npm login
