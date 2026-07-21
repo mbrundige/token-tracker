@@ -400,6 +400,11 @@ Then users can run:
 npx @mbrundige/token-tracker install --all
 ```
 
+## Contributors
+
+- [Max Brundige](https://github.com/mbrundige)
+- [Stephen Bowman](https://github.com/BowmanStephen)
+
 ## License
 
 MIT
