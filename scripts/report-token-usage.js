@@ -4,7 +4,7 @@
 const fs = require("fs");
 const path = require("path");
 const { loadPrices, formatCost, epochFeatureCost } = require("./pricing.js");
-const { schedulePricePullIfStale, priceRefreshOptions } = require("./pull-prices.js");
+const { priceRefreshOptions, ensureFreshPrices } = require("./pull-prices.js");
 const { paths } = require("./paths.js");
 const { createAnsi } = require("./ansi.js");
 
@@ -245,16 +245,26 @@ function currentScope(config) {
   return { project, feature, cwd };
 }
 
-function main() {
+async function main() {
   const rows = loadRows();
   const config = loadConfig();
   const refresh = priceRefreshOptions(config);
   if (refresh.autoPull) {
-    schedulePricePullIfStale({
+    const ensured = await ensureFreshPrices({
       pricesPath: PRICES_PATH,
       source: refresh.source,
       maxAgeMs: refresh.maxAgeMs,
+      onStatus: (msg) => console.error(ansi.dim(msg)),
     });
+    if (ensured.pulled) {
+      console.error(ansi.dim(`Prices updated from ${refresh.source}.`));
+    } else if (ensured.reason === "pull_failed") {
+      console.error(
+        ansi.yellow(
+          `Price refresh failed (${ensured.error || "error"}); using cached rates${ensured.scheduled ? " and retrying in background" : ""}.`,
+        ),
+      );
+    }
   }
   const prices = loadPrices(PRICES_PATH);
   const scope = currentScope(config);
@@ -268,6 +278,7 @@ function main() {
     `${ansi.dim("Prices:")}  ${PRICES_PATH}${fs.existsSync(PRICES_PATH) ? "" : ansi.yellow(" (missing)")}`,
   );
   if (prices.updated_at) console.log(`${ansi.dim("Price as of:")} ${prices.updated_at}`);
+  if (prices.source) console.log(`${ansi.dim("Price source:")} ${prices.source}`);
   console.log(
     `${ansi.dim("Current scope:")} ${ansi.cyan(`${scope.project}${scope.feature ? `/${scope.feature}` : ""}`)}`,
   );
@@ -277,6 +288,11 @@ function main() {
   console.log(renderHeatmap(byDay));
 }
 
-if (require.main === module) main();
+if (require.main === module) {
+  main().catch((err) => {
+    console.error(`token-tracker: ${err.message || err}`);
+    process.exit(1);
+  });
+}
 
 module.exports = { featureBreakdown, epochTotal, renderFeatureTable };

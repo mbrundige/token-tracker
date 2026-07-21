@@ -21,6 +21,7 @@ const {
   cleanKey,
   schedulePricePullIfStale,
   priceRefreshOptions,
+  pricesRefreshStatus,
 } = require("./pull-prices.js");
 
 const snap = cleanSnapshot({
@@ -138,7 +139,12 @@ assert.ok(Math.abs(delta.estimatedCostUsd - 0.0225) < 1e-9);
 const freshPricesPath = path.join("/tmp", `tt-prices-fresh-${process.pid}.json`);
 fs.writeFileSync(
   freshPricesPath,
-  `${JSON.stringify({ updated_at: new Date().toISOString(), default: prices.default, models: {} }, null, 2)}\n`,
+  `${JSON.stringify({
+    updated_at: new Date().toISOString(),
+    source: "openrouter",
+    default: prices.default,
+    models: {},
+  }, null, 2)}\n`,
 );
 const sched = schedulePricePullIfStale({
   pricesPath: freshPricesPath,
@@ -146,7 +152,25 @@ const sched = schedulePricePullIfStale({
 });
 assert.strictEqual(sched.scheduled, false);
 assert.strictEqual(sched.reason, "fresh");
+
+// Seed / missing source must refresh even when file mtime is new
+const seedPath = path.join("/tmp", `tt-prices-seed-${process.pid}.json`);
+fs.writeFileSync(
+  seedPath,
+  `${JSON.stringify({ source: "seed", default: prices.default, models: {} }, null, 2)}\n`,
+);
+const seedStatus = pricesRefreshStatus(seedPath, 60 * 60 * 1000);
+assert.strictEqual(seedStatus.needed, true);
+assert.strictEqual(seedStatus.reason, "seed");
+const seedSched = schedulePricePullIfStale({
+  pricesPath: seedPath,
+  maxAgeMs: 60 * 60 * 1000,
+});
+assert.strictEqual(seedSched.scheduled, true);
+assert.ok(["seed", "in_flight"].includes(seedSched.reason) || seedSched.scheduled);
 fs.rmSync(freshPricesPath, { force: true });
+fs.rmSync(seedPath, { force: true });
+fs.rmSync(`${seedPath}.pulling`, { force: true });
 
 const refresh = priceRefreshOptions({ prices: { auto_pull: true, auto_pull_interval_hours: 1 } });
 assert.strictEqual(refresh.maxAgeMs, 3600000);

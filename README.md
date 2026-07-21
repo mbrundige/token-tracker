@@ -250,9 +250,15 @@ npx @mbrundige/token-tracker prices show
 
 Pull writes `~/.token-tracker/prices.json` (with a `.bak` backup), keeps your existing `default` rates, and preserves any model entry marked `"locked": true`.
 
-#### Hourly auto-refresh
+#### Automatic price refresh
 
-New installs enable automatic pulls. While the Cursor status line (or report) runs, if `prices.json` is older than 1 hour, Token Tracker **spawns a background** `prices pull` so the status line stays within its timeout budget. Ongoing cost uses the freshest rates already on disk; the next run picks up the updated file.
+You do **not** need to run `prices pull` yourself. Install seeds a local table, then:
+
+1. **Install** kicks off a background pull from OpenRouter
+2. **Report** pulls in the foreground when rates are still seed/missing or older than 1 hour (prints a short “Fetching/Refreshing…” note)
+3. **Status line** keeps pulls in the background so it stays within Cursor’s ~1s budget
+
+Seed files are marked `"source": "seed"` so they never look “fresh” just because the file was copied recently.
 
 ```json
 {
@@ -264,7 +270,7 @@ New installs enable automatic pulls. While the Cursor status line (or report) ru
 }
 ```
 
-Set `"auto_pull": false` (or `auto_pull_interval_hours: 0`) to disable.
+Set `"auto_pull": false` (or `auto_pull_interval_hours: 0`) to disable. Manual `npx @mbrundige/token-tracker prices pull` still works when you want an immediate refresh.
 
 #### Locked-in epoch costs
 

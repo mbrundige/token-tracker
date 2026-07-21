@@ -6,6 +6,7 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 const { resolveDataDir, ensureDataDir } = require("../scripts/paths.js");
+const { schedulePricePullIfStale } = require("../scripts/pull-prices.js");
 
 const ROOT = path.resolve(__dirname, "..");
 const DATA_DIR = resolveDataDir();
@@ -127,6 +128,35 @@ function ensureConfig() {
   if (!fs.existsSync(configPath)) {
     fs.writeFileSync(configPath, `${JSON.stringify(DEFAULT_CONFIG, null, 2)}\n`, "utf8");
     return { created: true, configPath, migration };
+  }
+  // Upgrade older configs so auto price pull stays on by default.
+  try {
+    const existing = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    if (existing && typeof existing === "object" && !Array.isArray(existing)) {
+      let changed = false;
+      if (!existing.prices || typeof existing.prices !== "object") {
+        existing.prices = { ...DEFAULT_CONFIG.prices };
+        changed = true;
+      } else {
+        if (existing.prices.auto_pull === undefined) {
+          existing.prices.auto_pull = true;
+          changed = true;
+        }
+        if (existing.prices.auto_pull_interval_hours === undefined) {
+          existing.prices.auto_pull_interval_hours = 1;
+          changed = true;
+        }
+        if (!existing.prices.source) {
+          existing.prices.source = "openrouter";
+          changed = true;
+        }
+      }
+      if (changed) {
+        fs.writeFileSync(configPath, `${JSON.stringify(existing, null, 2)}\n`, "utf8");
+      }
+    }
+  } catch {
+    // leave existing file alone if unreadable
   }
   return { created: false, configPath, migration };
 }
@@ -264,6 +294,11 @@ function install(argv) {
   const installed = keys.map((key) => installSkill(key));
   const { created, configPath, migration } = ensureConfig();
   const { created: pricesCreated, pricesPath } = ensurePrices();
+  const pricePull = schedulePricePullIfStale({
+    pricesPath,
+    source: "openrouter",
+    maxAgeMs: 60 * 60 * 1000,
+  });
 
   const cursorInstall = installed.find((item) => item.dest.includes(`${path.sep}.cursor${path.sep}`));
   const wantsStatusline =
@@ -286,6 +321,9 @@ function install(argv) {
   }
   if (statuslineWired) notes.push("Restart Cursor CLI to pick up statusLine changes.");
   if (pricesCreated) notes.push(`Seeded default price table at ${pricesPath}.`);
+  if (pricePull.scheduled) {
+    notes.push("Fetching latest model prices in the background (also auto-refreshes hourly on report/statusline).");
+  }
   if (keys.includes("gemini")) notes.push("In Gemini CLI run /commands reload and /skills reload.");
   if (keys.includes("cursor") || keys.includes("claude")) {
     notes.push("Cursor/Claude: /set-feature is available after install (reload chat if needed).");
@@ -310,6 +348,7 @@ function install(argv) {
         config_created: created,
         prices: pricesPath,
         prices_created: pricesCreated,
+        prices_pull_scheduled: Boolean(pricePull.scheduled),
         migrated_from_cursor: Boolean(migration && migration.migrated),
         statusline: statuslinePath,
         statusline_wired: statuslineWired,

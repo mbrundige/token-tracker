@@ -356,7 +356,42 @@ async function runPull({ source = "openrouter", outPath = DEFAULT_PRICES_PATH, d
 }
 
 /**
- * If prices are older than maxAgeMs, spawn a detached `prices pull`.
+ * Decide whether prices.json should be refreshed from the network.
+ * Seed files (no feed `source` / no `updated_at`) always need a pull — do not
+ * treat file mtime as freshness (that blocked auto-pull for ~1h after install).
+ */
+function pricesRefreshStatus(pricesPath, maxAgeMs = DEFAULT_MAX_AGE_MS) {
+  const ageGate = Number(maxAgeMs);
+  if (!Number.isFinite(ageGate) || ageGate <= 0) {
+    return { needed: false, reason: "disabled" };
+  }
+  if (!pricesPath || !fs.existsSync(pricesPath)) {
+    return { needed: true, reason: "missing", ageMs: Infinity };
+  }
+  const doc = loadPricesDoc(pricesPath);
+  const source = doc.source ? String(doc.source) : "";
+  if (!source || source === "seed" || !doc.updated_at) {
+    return { needed: true, reason: "seed", ageMs: Infinity, source: source || "seed" };
+  }
+  const updatedMs = pricesUpdatedAtMs(doc);
+  const ageMs = updatedMs ? Date.now() - updatedMs : Infinity;
+  if (ageMs >= ageGate) {
+    return { needed: true, reason: "stale", ageMs, updatedMs, source };
+  }
+  return { needed: false, reason: "fresh", ageMs, updatedMs, source };
+}
+
+function loadPricesDoc(pricesPath) {
+  try {
+    const payload = JSON.parse(fs.readFileSync(pricesPath, "utf8"));
+    return payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * If prices are older than maxAgeMs (or still seed), spawn a detached `prices pull`.
  * Never blocks the caller (safe for Cursor statusLine's ~1s budget).
  */
 function schedulePricePullIfStale({
@@ -365,15 +400,9 @@ function schedulePricePullIfStale({
   maxAgeMs = DEFAULT_MAX_AGE_MS,
   pullScript = path.join(__dirname, "pull-prices.js"),
 } = {}) {
-  const ageGate = Number(maxAgeMs);
-  if (!Number.isFinite(ageGate) || ageGate <= 0) {
-    return { scheduled: false, reason: "disabled" };
-  }
-
-  const updatedMs = pricesUpdatedAtMs(pricesPath);
-  const ageMs = updatedMs ? Date.now() - updatedMs : Infinity;
-  if (ageMs < ageGate && fs.existsSync(pricesPath)) {
-    return { scheduled: false, reason: "fresh", ageMs, updatedMs };
+  const status = pricesRefreshStatus(pricesPath, maxAgeMs);
+  if (!status.needed) {
+    return { scheduled: false, reason: status.reason, ageMs: status.ageMs, updatedMs: status.updatedMs };
   }
 
   const lockPath = `${pricesPath}.pulling`;
@@ -409,7 +438,13 @@ function schedulePricePullIfStale({
         // ignore
       }
     }, 30_000).unref?.();
-    return { scheduled: true, reason: "stale", ageMs, updatedMs, pid: child.pid };
+    return {
+      scheduled: true,
+      reason: status.reason,
+      ageMs: status.ageMs,
+      updatedMs: status.updatedMs,
+      pid: child.pid,
+    };
   } catch (err) {
     try {
       fs.rmSync(lockPath, { force: true });
@@ -417,6 +452,48 @@ function schedulePricePullIfStale({
       // ignore
     }
     return { scheduled: false, reason: "spawn_failed", error: String(err.message || err) };
+  }
+}
+
+/**
+ * For report / interactive CLI: pull synchronously when seed or stale so the
+ * user does not need to run `prices pull` by hand. Falls back to background
+ * schedule if the foreground pull fails.
+ */
+async function ensureFreshPrices({
+  pricesPath = DEFAULT_PRICES_PATH,
+  source = "openrouter",
+  maxAgeMs = DEFAULT_MAX_AGE_MS,
+  timeoutMs = 20000,
+  onStatus = null,
+} = {}) {
+  const status = pricesRefreshStatus(pricesPath, maxAgeMs);
+  if (!status.needed) {
+    return { pulled: false, ...status };
+  }
+  if (typeof onStatus === "function") {
+    onStatus(
+      status.reason === "seed" || status.reason === "missing"
+        ? "Fetching latest model prices…"
+        : "Refreshing model prices…",
+    );
+  }
+  try {
+    const result = await runPull({ source, outPath: pricesPath, dryRun: false });
+    try {
+      fs.rmSync(`${pricesPath}.pulling`, { force: true });
+    } catch {
+      // ignore
+    }
+    return { pulled: true, reason: status.reason, result };
+  } catch (err) {
+    const scheduled = schedulePricePullIfStale({ pricesPath, source, maxAgeMs });
+    return {
+      pulled: false,
+      reason: "pull_failed",
+      error: String(err.message || err),
+      scheduled: scheduled.scheduled,
+    };
   }
 }
 
@@ -533,7 +610,9 @@ module.exports = {
   cleanKey,
   idKey,
   runPull,
+  pricesRefreshStatus,
   schedulePricePullIfStale,
+  ensureFreshPrices,
   priceRefreshOptions,
   main,
 };

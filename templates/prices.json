@@ -1,5 +1,6 @@
 {
-  "_comment": "Estimated API list prices in USD per 1M tokens. Matched as case-insensitive substrings against the model display name (longest match wins). Edit freely; Cursor/Claude subscription billing may differ from API list rates.",
+  "_comment": "Estimated API list prices in USD per 1M tokens. Matched as case-insensitive substrings against the model display name (longest match wins). Edit freely; Cursor/Claude subscription billing may differ from API list rates. source=seed means install defaults — report/statusline auto-pull replaces this from OpenRouter.",
+  "source": "seed",
   "default": {
     "input_per_million_usd": 2.5,
     "output_per_million_usd": 15

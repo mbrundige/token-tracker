@@ -121,4 +121,4 @@ Refresh rates with:
 npx @mbrundige/token-tracker prices pull
 ```
 
-By default, status line / report also schedule a background pull when `prices.json` is older than 1 hour (`config.prices.auto_pull`). Snapshot rows lock `cost_delta_usd` at save time so historical report totals do not drift when rates change.
+By default, prices refresh automatically: install starts a background pull, the report refreshes seed/stale rates before printing, and the status line schedules a background pull when `prices.json` is older than 1 hour (`config.prices.auto_pull`). Snapshot rows lock `cost_delta_usd` at save time so historical report totals do not drift when rates change.
