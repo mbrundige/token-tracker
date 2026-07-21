@@ -345,6 +345,23 @@ assert.ok(pulled["claude opus"]);
 assert.strictEqual(pulled["claude opus"].output_per_million_usd, 25);
 assert.ok(!pulled["skip-me"]);
 
+// "o4-mini" alias must resolve to the base model, never the
+// "-deep-research" sibling (different price tier), regardless of which
+// one the upstream API lists first (both tie on versionScore, so array
+// order previously decided the winner).
+const o4miniRows = [
+  { id: "openai/o4-mini", name: "OpenAI: o4-mini", pricing: { prompt: "0.0000011", completion: "0.0000044" } },
+  {
+    id: "openai/o4-mini-deep-research",
+    name: "OpenAI: o4-mini (deep research)",
+    pricing: { prompt: "0.000002", completion: "0.000008" },
+  },
+];
+const o4BaseFirst = parseOpenRouter({ data: o4miniRows });
+const o4ResearchFirst = parseOpenRouter({ data: [...o4miniRows].reverse() });
+assert.strictEqual(o4BaseFirst["o4-mini"].input_per_million_usd, 1.1);
+assert.strictEqual(o4ResearchFirst["o4-mini"].input_per_million_usd, 1.1);
+
 const doc = buildPricesDocument({
   source: "openrouter",
   url: "https://example.test",
