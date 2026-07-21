@@ -1,6 +1,6 @@
 {
   "name": "@mbrundige/token-tracker",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Local token usage tracker for Cursor, Claude Code, Gemini CLI, Codex, Continue, and Agent Skills hosts. Shared data lives in ~/.token-tracker/ with an optional Cursor CLI status line.",
   "bin": {
     "token-tracker": "bin/token-tracker.js"
