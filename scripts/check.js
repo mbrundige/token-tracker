@@ -7,6 +7,7 @@ const os = require("os");
 const path = require("path");
 const { cleanSnapshot } = require("./save-token-usage.js");
 const { TARGETS, selectedTargets, renderTemplate } = require("../bin/token-tracker.js");
+const { createAnsi, wantsColor } = require("./ansi.js");
 const {
   ratesForModel,
   estimateCostUsdForModel,
@@ -38,6 +39,14 @@ assert.ok(TARGETS.gemini.geminiCommand);
 assert.ok(TARGETS.cursor.statusline);
 assert.ok(TARGETS.cursor.slashCommandDir);
 assert.ok(TARGETS.claude.slashCommandDir);
+
+const off = createAnsi(false);
+assert.strictEqual(off.green("$1.23"), "$1.23");
+assert.strictEqual(off.heat(4, "█"), "█");
+const on = createAnsi(true);
+assert.ok(on.green("$1.23").includes("\x1b["));
+assert.ok(on.heat(4, "█").includes("\x1b["));
+assert.strictEqual(typeof wantsColor(), "boolean");
 
 assert.strictEqual(
   renderTemplate("hi {{NAME}}", { NAME: "world" }),
