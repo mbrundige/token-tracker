@@ -18,11 +18,11 @@
 No npm dependencies. Shared data lives in an agent-neutral home folder — `~/.token-tracker/` — so Cursor, Claude, Gemini, Codex, and Continue all contribute to one history.
 
 <p align="center">
-  <img src="docs/screenshots/report.png" alt="token-tracker report with feature breakdown and heat map" width="720" />
+  <img src="docs/screenshots/report.png" alt="token-tracker report with feature breakdown, estimated cost, and heat map" width="720" />
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/statusline.png" alt="token-tracker Cursor CLI status line" width="720" />
+  <img src="docs/screenshots/statusline.png" alt="token-tracker Cursor CLI status line with estimated cost" width="720" />
 </p>
 
 ## Why
@@ -31,7 +31,7 @@ AI sessions burn tokens across many threads, models, and side quests. Token Trac
 
 - **Where did the tokens go?** Breakdown by `project/feature`, not just a session total
 - **What does this week look like?** Daily heat map (same shape as a GitHub contribution graph)
-- **What am I burning right now?** Optional Cursor CLI `statusLine` with feature-scoped `toks`
+- **What am I burning right now?** Optional Cursor CLI `statusLine` with feature-scoped `toks` and estimated `$` cost
 
 Switching project or feature resets the status-line counter for that scope, so each label tracks usage from that point forward.
 
