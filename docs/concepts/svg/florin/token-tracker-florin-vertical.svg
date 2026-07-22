@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc" viewBox="0 0 220 240" width="220" height="240">
+  <title id="title">token-tracker florin logo vertical</title>
+  <desc id="desc">Florin coin mark stacked above the token-tracker wordmark</desc>
+  <defs>
+    <style>
+      .ink { fill: #0A0C0A; }
+      .accent { fill: #2B6CFF; }
+      .word {
+        font-family: "IBM Plex Mono", "SF Mono", ui-monospace, monospace;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.04em;
+        fill: #0A0C0A;
+        text-anchor: middle;
+      }
+    </style>
+  </defs>
+  <g id="icon" transform="translate(54,24)">
+    <ellipse class="ink" cx="56" cy="56" rx="54" ry="54"/>
+    <ellipse fill="#F7F4EC" cx="56" cy="56" rx="38" ry="38"/>
+    <ellipse class="ink" cx="56" cy="56" rx="24" ry="24"/>
+    <path class="ink" d="M104 36 Q124 56 104 76 Q96 56 104 36 Z"/>
+    <circle class="accent" cx="56" cy="56" r="10"/>
+  </g>
+  <text class="word" x="110" y="200">token-tracker</text>
+</svg>

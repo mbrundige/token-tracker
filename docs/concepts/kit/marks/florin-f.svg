@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc" viewBox="0 0 128 128" width="128" height="128">
+  <title id="title">Florin F lettermark</title>
+  <desc id="desc">Medieval serif F with cobalt chip window in the stem</desc>
+  <defs>
+    <style>
+      .ink { fill: #0B0B0B; }
+      .chip { fill: #2B6CFF; }
+      .pin { fill: #EDEAE2; }
+    </style>
+  </defs>
+  <!-- Simplified F for d32px; ornate PNG is campaign/hero -->
+  <g transform="translate(28,18)">
+    <!-- stem -->
+    <rect class="ink" x="8" y="0" width="22" height="92"/>
+    <!-- top arm -->
+    <rect class="ink" x="8" y="0" width="64" height="18"/>
+    <!-- mid arm -->
+    <rect class="ink" x="8" y="38" width="48" height="14"/>
+    <!-- serifs -->
+    <rect class="ink" x="0" y="0" width="12" height="8"/>
+    <rect class="ink" x="0" y="84" width="38" height="8"/>
+    <rect class="ink" x="64" y="0" width="8" height="18"/>
+    <!-- chip window -->
+    <circle class="chip" cx="19" cy="58" r="9"/>
+    <rect class="pin" x="15" y="54" width="8" height="8" rx="1"/>
+    <rect class="pin" x="13" y="56" width="2" height="1.5"/>
+    <rect class="pin" x="13" y="59" width="2" height="1.5"/>
+    <rect class="pin" x="23" y="56" width="2" height="1.5"/>
+    <rect class="pin" x="23" y="59" width="2" height="1.5"/>
+  </g>
+</svg>

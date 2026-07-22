@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc" viewBox="0 0 640 120" width="640" height="120">
+  <title id="title">token-tracker wordmark</title>
+  <desc id="desc">Medieval-leaning serif wordmark for token-tracker</desc>
+  <text
+    x="320"
+    y="78"
+    text-anchor="middle"
+    fill="#0B0B0B"
+    font-family="Palatino Linotype, Palatino, Book Antiqua, Georgia, serif"
+    font-size="52"
+    font-weight="500"
+    letter-spacing="0.12em"
+  >token-tracker</text>
+</svg>

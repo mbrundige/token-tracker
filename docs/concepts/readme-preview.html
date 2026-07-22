@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>token-tracker — GitHub README preview</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --link: #2f81f7;
+      --code-bg: #1f242b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #010409;
+      color: var(--text);
+    }
+    .chrome {
+      max-width: 1012px;
+      margin: 24px auto 64px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      overflow: hidden;
+    }
+    .chrome-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .chrome-bar strong { color: var(--text); font-weight: 600; }
+    .readme {
+      padding: 32px 40px 48px;
+    }
+    .center { text-align: center; }
+    .hero { max-width: 640px; width: 100%; height: auto; }
+    .lede { margin: 16px auto 8px; max-width: 40rem; color: var(--text); }
+    .wink { color: var(--muted); margin: 0 0 20px; }
+    .wink code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.9em;
+    }
+    .hosts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 8px 0 28px; }
+    .hosts img { height: 44px; width: auto; }
+    h2 {
+      font-size: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.3em;
+      margin: 1.6em 0 0.8em;
+    }
+    h3 { font-size: 1.15rem; margin: 1.4em 0 0.6em; }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      overflow-x: auto;
+      font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    p { margin: 0.75em 0; }
+    ul { padding-left: 1.4em; }
+    li { margin: 0.35em 0; }
+    .shot { max-width: 720px; width: 100%; height: auto; margin: 12px auto; display: block; }
+    .campaign {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .campaign img {
+      width: 220px;
+      max-width: 30%;
+      height: auto;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin: 12px 0 20px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    th { background: var(--panel); }
+    td img { height: 28px; width: auto; vertical-align: middle; }
+    .note {
+      max-width: 1012px;
+      margin: 0 auto 12px;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 0 4px;
+    }
+  </style>
+</head>
+<body>
+  <p class="note">Local preview · approximates GitHub dark README · not pixel-perfect chrome</p>
+  <div class="chrome">
+    <div class="chrome-bar">
+      <strong>mbrundige / token-tracker</strong>
+      <span>·</span>
+      <span>README.md (Florin landing preview)</span>
+    </div>
+    <article class="readme">
+      <p class="center">
+        <img class="hero" src="../logos/token-tracker.png" alt="token-tracker" />
+      </p>
+      <p class="center lede">
+        <strong>Local token usage tracking</strong> — one <em>libro</em> for AI spend across Cursor, Claude Code, Gemini CLI, Codex, Continue, and Agent Skills hosts.
+      </p>
+      <p class="center wink">Count every token. · <code>flr · local</code></p>
+      <div class="hosts">
+        <img src="../logos/cursor.png" alt="Cursor" />
+        <img src="../logos/claude.png" alt="Claude Code" />
+        <img src="../logos/gemini.png" alt="Gemini CLI" />
+        <img src="../logos/codex.png" alt="Codex CLI" />
+        <img src="../logos/continue.png" alt="Continue" />
+        <img src="../logos/agents.png" alt="Agent Skills" />
+      </div>
+
+      <h2>Quick install</h2>
+      <pre>npx @mbrundige/token-tracker install --all</pre>
+      <p>Or pick hosts:</p>
+      <pre>npx @mbrundige/token-tracker install --cursor --claude --gemini --codex</pre>
+      <p>No npm dependencies. Shared data lives in <code>~/.token-tracker/</code> — every host feeds one history.</p>
+      <img class="shot" src="../screenshots/install.png" alt="install" />
+
+      <h3>Supported hosts</h3>
+      <table>
+        <tr><th></th><th>Flag</th><th>Host</th></tr>
+        <tr><td><img src="../logos/cursor.png" alt="" /></td><td><code>--cursor</code></td><td>Cursor</td></tr>
+        <tr><td><img src="../logos/claude.png" alt="" /></td><td><code>--claude</code></td><td>Claude Code</td></tr>
+        <tr><td><img src="../logos/gemini.png" alt="" /></td><td><code>--gemini</code></td><td>Gemini CLI</td></tr>
+        <tr><td><img src="../logos/codex.png" alt="" /></td><td><code>--codex</code></td><td>Codex CLI</td></tr>
+        <tr><td><img src="../logos/icon.png" alt="" /></td><td><code>--all</code></td><td>All hosts</td></tr>
+      </table>
+
+      <h2>Why</h2>
+      <p>AI sessions burn tokens across many threads, models, and side quests. Token Tracker answers:</p>
+      <ul>
+        <li><strong>Where did the tokens go?</strong> Breakdown by <code>project/feature</code></li>
+        <li><strong>What does this week look like?</strong> Daily heat map</li>
+        <li><strong>What am I burning right now?</strong> Optional Cursor CLI status line</li>
+      </ul>
+      <p>Florence’s gold florin (<em>fiorino d’oro</em>) was Europe’s trusted <strong>settlement</strong> coin — a stable unit of account. <strong>token-tracker</strong> treats AI tokens the same way: one local ledger under <code>~/.token-tracker/</code>, an <strong>F</strong> for <em>fiorino</em>, and a blue chip as the assay mark that the count lives on <em>your</em> machine.</p>
+      <div class="campaign">
+        <img src="../logos/florin-coin.png" alt="Florin F-coin" />
+        <img src="../logos/florin-ascii.png" alt="ASCII florin" />
+        <img src="../logos/florin-toll.png" alt="Florin toll" />
+      </div>
+
+      <h2>Features</h2>
+      <ul>
+        <li>One-command install into Cursor, Claude, Gemini, Codex, Continue, Agent Skills</li>
+        <li>Shared history across hosts</li>
+        <li>Feature-scoped status line + estimated cost</li>
+        <li>Zero runtime deps — Node.js 22+</li>
+      </ul>
+      <img class="shot" src="../screenshots/report.png" alt="report" />
+      <img class="shot" src="../screenshots/statusline.png" alt="statusline" />
+    </article>
+  </div>
+</body>
+</html>

@@ -6,50 +6,6 @@
   <em>token-tracker</em>
 </p>
 
----
-
-The lights go down. The mural comes up. A gold **F** in a giant palm. Somebody in the cheap seats whispers *is that a CLI.*
-
-**Yes!**
-
-**Wow!**
-
-**How you doing GitHub?**
-
-We got florins. We got folders. We got a heat map that looks like you shipped and feels like you paid. Put your hands together for a product that does not ask your phone for a single joke tip.
-
----
-
-People said *raise a round.* People said *you need a Series A for a folder.* People said money arrives like a parade float and you clap until your wrists hurt.
-
-We inverted the parade.
-
-**No angels.**  
-**No float.**  
-**No wrist injuries.**
-
-The candy is free. The candy is `npx`. The candy lives in your home directory and does not RSVP. If you brought a pitch deck to this README, eat it. The ledger already ate Tuesday.
-
----
-
-Do you like to laugh?
-
-Wrong README.
-
-Do you like **receipts?**
-
-Do you like a little bar chart that says *this feature ate the week* without sending a scout into your camera roll?
-
-**Yes. Wow. Receipts.**
-
----
-
-Put your hands together for **florin**.
-
-Put your hands together for a **local ledger powered by your machine**.
-
-Not the cloud’s machine. Not the carrier’s machine. **Yours.** Cursor writes. Claude writes. Gemini writes. Codex writes. Continue writes. Agent Skills write. One book. Many hands. Still your disk.
-
 <p align="center">
   <strong>Local token usage tracking</strong> for Cursor, Claude Code, Gemini CLI, Codex, Continue, and other Agent Skills hosts. Snapshot spend by project and feature, keep a GitHub-style heat map, and optionally show a live Cursor CLI status line.
 </p>
@@ -63,87 +19,35 @@ Not the cloud’s machine. Not the carrier’s machine. **Yours.** Cursor writes
   <img src="docs/logos/agents.png" alt="Agent Skills" height="36" />
 </p>
 
----
-
-I have to interrupt myself. I love this path the way some people love a car they paid cash for and still describe at dinner.
-
-**MSRP:** free.  
-**Fuel:** Node.js **22+**.  
-**Connectivity:** Cursor, Claude, Gemini, Codex, Continue, Agents — **galore**.  
-**Resale:** you cannot flip a ledger, but you can open `~/.token-tracker/` and feel rich in JSONL.  
-**Zero npm dependencies.** Shared data lives in `~/.token-tracker/`. Every host writes the same history.
-
-Somebody once ran into traffic for a status line. Not metaphorically. Crosswalk. Laptop open. `toks` climbing like a pulse. We do not recommend the traffic. We recommend the status line. Optional. Sacred. Feature-scoped.
+No npm dependencies. Shared data lives in `~/.token-tracker/`. Every host writes the same history.
 
 Local only. Your machine.
-
----
 
 <p align="center">
   <img src="docs/screenshots/report.png" alt="token-tracker report with feature breakdown, estimated cost, and heat map" width="720" />
 </p>
 
-Look at that. Everyone is looking at the numbers. The standup ends. The room goes quiet. One guy says *I thought green squares meant I was a good person.* Another guy says *those are dollars wearing a costume.* A third guy starts a group chat called **Receipt Church** and nobody leaves. That is the social report. No blood. Just accountability with a heat map.
-
 <p align="center">
   <img src="docs/screenshots/statusline.png" alt="token-tracker Cursor CLI status line with estimated cost" width="720" />
 </p>
 
-Live line. Live shame. Live love. `toks` and `$` and a context bar that does not harvest your texts.
-
----
-
 ## Why
 
-This is not a dirty box.
-
-We do **not** pull your messages. We do **not** scrape your bank app. We do **not** invent comedy from your photos. We count tokens in a **home folder**. **100% accurate counting** of what the hosts already told us. Empathy for your bill. Zero empathy for harvest theater.
-
-AI sessions burn tokens across threads, models, and side quests you never labeled. token-tracker answers:
+AI sessions burn tokens across threads, models, and unlabeled side work. token-tracker answers:
 
 - **Where did the tokens go?** Breakdown by `project/feature`, not only a session total
-- **What does this week look like?** Daily heat map (a contribution graph for your bill)
+- **What does this week look like?** Daily heat map (same shape as a GitHub contribution graph)
 - **What am I burning right now?** Optional Cursor CLI `statusLine` with feature-scoped `toks` and estimated `$` cost
 
-Switching project or feature resets the status-line counter for that scope, so each label tracks usage from that point forward. New label, new epoch. The old spend stays in the book.
+Switching project or feature resets the status-line counter for that scope, so each label tracks usage from that point forward.
 
----
-
-### Invest zero
-
-Shark Tank form, inverted.
-
-Do not invest in me.  
-Do not invest in a Series A for a folder.  
-Invest **zero**. Invest in the **folder**. Bring cranberry sauce to Thanksgiving if you want — the ledger does not carve the turkey, does not ask for equity, and does not sit at the kids’ table. It sits at `~/.token-tracker/` and writes what happened.
-
----
-
-### Florence pride (hometown bit)
-
-I am from a city that stamped gold and called it a unit of account. Florence. The *fiorino d’oro*. Not a museum gift-shop speech. Hometown pride: they named a coin so merchants could stop arguing. **token-tracker** borrows the name: tokens are the unit, `~/.token-tracker/` is the book, and the **F** is for *fiorino*. We don’t move your gold. We count what you already spent.
+Florence’s gold florin (*fiorino d’oro*) was a unit of account. **token-tracker** borrows the name: tokens are the unit, `~/.token-tracker/` is the book, and the **F** is for *fiorino*. We don’t move your gold. We count what you already spent.
 
 <p align="center">
   <img src="docs/logos/florin-coin.png" alt="Engraved florin F-coin" width="200" />
   &nbsp;&nbsp;
   <img src="docs/logos/florin-ascii.png" alt="ASCII florin disc" width="200" />
 </p>
-
-The coin fits on a shirt. The mural does not. Ship both. A coworker laughed when the mural showed up on a Node CLI. He said nobody puts a medieval coin on a status line. The coin is still there. So is he, quieter now. Love the mural. Love the F-coin. Love the ASCII disc. Shirt first. Then the path. Then the numbers.
-
----
-
-### Outdoor yells (for toks)
-
-Sometimes you have to take it outside.
-
-**TOKS!**  
-**FEATURE!**  
-**EPOCH!**
-
-Yell at the sky if the status line says `7.1k`. Yell softer if it says `$0.0534`. The neighbors will think you are gardening. You are gardening a ledger.
-
----
 
 ## Features
 
@@ -155,20 +59,9 @@ Yell at the sky if the status line says `7.1k`. Yell softer if it says `$0.0534`
 - **Feature-scoped status line**: project, feature, model, context bar, token count, estimated cost
 - **Estimated cost per feature**: from `prices.json` rates × prompt/completion deltas (epoch-aware)
 - **Epoch-aware totals**: feature resets do not double-count growing snapshots
-- **Zero runtime deps**: plain Node.js 22+ scripts. Open the hood. Scripts. No carnival riding shotgun.
-
-You open six tools. You forget which one ate Tuesday. The ledger remembers. That is the feature.
-
----
+- **Zero runtime deps**: plain Node.js 22+ scripts
 
 ## Quick install
-
-### The diet (commands are the meal plan)
-
-Breakfast: install.  
-Lunch: set-feature.  
-Dinner: report.  
-Dessert: still free. Still not an angel.
 
 Install everywhere you use agent skills:
 
@@ -221,13 +114,7 @@ Install also writes a `token-tracker` launcher to `~/.local/bin/token-tracker` (
 - At least one supported host with personal/user skills enabled
 - Optional: `git` (falls back to the current branch as the feature name)
 
-No phone harvest. No comedy tips from your texts. A folder and a count. **100% accurate counting** of host-reported tokens. That is the whole empathy stack.
-
 ## Label a project and feature
-
-Name the work before the model names it for you.
-
-Spread the picnic blanket. Not a revenge picnic. A **label picnic**. You bring `/set-feature`. The ants bring nothing. The status line starts at zero for the new scope like you wiped the crumbs and kept the receipt book.
 
 ```bash
 npx @mbrundige/token-tracker set-context \
@@ -255,7 +142,7 @@ In chat:
   <img src="docs/screenshots/set-context.png" alt="token-tracker set-context output" width="720" />
 </p>
 
-`tokens_reset: true` means the status-line counter will start at `0` for the new scope. Same machine. New handwriting.
+`tokens_reset: true` means the status-line counter will start at `0` for the new scope.
 
 ### Resolution order
 
@@ -279,7 +166,7 @@ In chat:
 npx @mbrundige/token-tracker report
 ```
 
-Shows usage by feature (token bar chart + estimated cost) and a daily heat map. Same shape as a GitHub contribution graph. Different emotion. Green squares used to mean you shipped. These mean you typed.
+Shows usage by feature (token bar chart + estimated cost) and a daily heat map.
 
 In chat, invoke the skill:
 
@@ -446,8 +333,6 @@ npx ./mbrundige-token-tracker-*.tgz install --gemini --codex
 
 ## Verify
 
-Run it. Prefer green.
-
 ```bash
 printf '%s' '{"session_id":"install-check","cwd":"'"$PWD"'","workspace":{"current_dir":"'"$PWD"'"},"model":{"display_name":"GPT-5.5"},"context_window":{"total_input_tokens":1000,"total_output_tokens":250,"used_percentage":4}}' \
   | TOKEN_TRACKER_HISTORY=/tmp/token-tracker-install-check.jsonl \
@@ -481,7 +366,7 @@ node scripts/check.js
 
 On first run / install, if `~/.token-tracker/` is empty and legacy `~/.cursor/token-tracker/` has data, files are copied over (legacy folder is left in place).
 
-Override paths with `TOKEN_TRACKER_HOME`, `TOKEN_TRACKER_CONFIG`, `TOKEN_TRACKER_HISTORY`, and `TOKEN_TRACKER_PRICES`. One book. Many hands. Still your disk.
+Override paths with `TOKEN_TRACKER_HOME`, `TOKEN_TRACKER_CONFIG`, `TOKEN_TRACKER_HISTORY`, and `TOKEN_TRACKER_PRICES`.
 
 ## Repo layout
 
@@ -529,22 +414,6 @@ Then users can run:
 npx @mbrundige/token-tracker install --all
 ```
 
----
-
-## Garage of hosts (closing meditation)
-
-Turn it up. Not ironically. Sincerely.
-
-This is the brown-directory dream: not vinyl siding — a folder. Not a garage of crossovers — a garage of hosts writing one history. Walk the hallway. Touch the walls. The walls are files:
-
-`config.json` · `history.jsonl` · `prices.json` · scripts under `cli/`
-
-That is `~/.token-tracker/`. That is home. That is the mint.
-
-Breathe in. Breathe out. Run `report`. Prefer that the numbers hurt a little. That means they are real.
-
----
-
 ## Contributors
 
 - [Max Brundige](https://github.com/mbrundige): built the machine
@@ -555,7 +424,3 @@ Breathe in. Breathe out. Run `report`. Prefer that the numbers hurt a little. Th
 MIT
 
 `flr · local`
-
-**Give it up for Max.**
-
-**Good night.**

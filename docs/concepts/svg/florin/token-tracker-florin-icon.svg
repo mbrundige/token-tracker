@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc" viewBox="0 0 64 64" width="64" height="64">
+  <title id="title">token-tracker florin icon</title>
+  <desc id="desc">Florin coin disc with cobalt accent window  icon only</desc>
+  <defs>
+    <style>
+      .ink { fill: #0A0C0A; }
+      .accent { fill: #2B6CFF; }
+    </style>
+  </defs>
+  <ellipse class="ink" cx="32" cy="32" rx="28" ry="28"/>
+  <ellipse fill="#F7F4EC" cx="32" cy="32" rx="18" ry="18"/>
+  <ellipse class="ink" cx="32" cy="32" rx="11" ry="11"/>
+  <path class="ink" d="M54 20 Q62 32 54 44 Q50 32 54 20 Z"/>
+  <circle class="accent" cx="32" cy="32" r="5"/>
+</svg>
