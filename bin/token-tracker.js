@@ -93,12 +93,15 @@ const SCRIPT_FILES = [
   "pull-prices.js",
   "paths.js",
   "ansi.js",
+  "parity-check.js",
+  "bench-ledger.js",
+  "ledger-index.js",
 ];
 
 function usage() {
   console.log(`Usage:
   npx @mbrundige/token-tracker install [targets...] [--statusline|--no-statusline]
-  npx @mbrundige/token-tracker report
+  npx @mbrundige/token-tracker report [--json]
   npx @mbrundige/token-tracker save --summary "..." [--project NAME] [--feature NAME]
       [--model NAME] [--prompt-tokens N] [--completion-tokens N] [--total-tokens N]
       [--json '...'] [--source TEXT] [--metadata-json '...']
@@ -108,6 +111,8 @@ function usage() {
   npx @mbrundige/token-tracker statusline   # reads status JSON from stdin
   npx @mbrundige/token-tracker prices pull [--source openrouter|llmcosthub|benchgecko]
   npx @mbrundige/token-tracker prices show
+  npx @mbrundige/token-tracker parity
+  npx @mbrundige/token-tracker bench [--rows N] [--index] [--budget-ms N]
 
 Install targets:
   --all                 Cursor, Claude, Gemini, Codex, Agent Skills, Continue
@@ -481,7 +486,9 @@ function main() {
     return;
   }
   if (cmd === "install") return install(rest);
-  if (cmd === "report") return delegate("report-token-usage.js", rest);
+  if (cmd === "report") {
+    return delegate("report-token-usage.js", rest);
+  }
   if (cmd === "save") return delegate("save-token-usage.js", rest);
   if (cmd === "set-context") return delegate("set-token-context.js", rest);
   if (cmd === "set-feature") return delegate("set-token-context.js", normalizeSetFeatureArgs(rest));
@@ -491,6 +498,8 @@ function main() {
     const result = spawnSync(process.execPath, [script, ...rest], { stdio: "inherit" });
     process.exit(result.status == null ? 1 : result.status);
   }
+  if (cmd === "parity") return delegate("parity-check.js", rest);
+  if (cmd === "bench") return delegate("bench-ledger.js", rest);
   console.error(`token-tracker: unknown command: ${cmd}`);
   usage();
   process.exit(2);

@@ -13,6 +13,13 @@ const {
 } = require("./pricing.js");
 const { schedulePricePullIfStale, priceRefreshOptions } = require("./pull-prices.js");
 const { paths } = require("./paths.js");
+const { 
+  resolveIndexPath, 
+  ensureIndex, 
+  lastFromIndex,
+  isIndexFresh,
+  loadIndex
+} = require("./ledger-index.js");
 
 const { historyPath: HISTORY_PATH, configPath: CONFIG_PATH, pricesPath: PRICES_PATH } = paths();
 
@@ -297,20 +304,53 @@ function main() {
     prices,
   );
 
-  // Re-read after possible append so ongoing cost includes the just-locked delta tip correctly.
-  const rowsAfter = iterHistory();
-  const ongoing = featureOngoingCost(
-    rowsAfter,
-    {
+  // Calculate ongoing cost using index if available, otherwise fall back to full scan
+  const indexPath = resolveIndexPath(HISTORY_PATH);
+  const index = loadIndex(indexPath);
+  let ongoing;
+  
+  if (index && isIndexFresh(index, HISTORY_PATH)) {
+    // Use index for fast lookup
+    const lastSnapshot = lastFromIndex(index, project, feature);
+    const current = {
       project,
       feature,
-      inputTokens: featureTokens.inputTokens,
-      outputTokens: featureTokens.outputTokens,
-      totalTokens: featureTokens.totalTokens,
       model,
-    },
-    prices,
-  );
+      prompt_tokens: featureTokens.inputTokens,
+      completion_tokens: featureTokens.outputTokens,
+      total_tokens: featureTokens.totalTokens,
+    };
+    const tip = computeCostDelta(lastSnapshot, current, prices);
+    
+    // Get base cost from index
+    const key = `${project}\t${feature || "(none)"}`;
+    const entry = index.features[key];
+    const lockedUsd = entry ? (entry.cost_usd || 0) : 0;
+    const tipUsd = tip.costDeltaUsd || 0;
+    const totalUsd = lockedUsd + tipUsd;
+    
+    ongoing = {
+      lockedUsd: entry ? entry.cost_usd : null,
+      tipUsd: tip.costDeltaUsd,
+      costUsd: (entry && entry.cost_usd != null) || tip.costDeltaUsd != null ? totalUsd : null,
+      tip,
+    };
+  } else {
+    // Fallback to full scan
+    const rowsAfter = iterHistory();
+    ongoing = featureOngoingCost(
+      rowsAfter,
+      {
+        project,
+        feature,
+        inputTokens: featureTokens.inputTokens,
+        outputTokens: featureTokens.outputTokens,
+        totalTokens: featureTokens.totalTokens,
+        model,
+      },
+      prices,
+    );
+  }
 
   const ctx = contextBar(usedPct);
   const toks = `toks ${compactTokens(featureTokens.totalTokens)}`;

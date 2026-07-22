@@ -369,4 +369,33 @@ const doc = buildPricesDocument({
 assert.strictEqual(doc.default.input_per_million_usd, 1);
 assert.ok(doc.models["my-local"].locked);
 
+// Run parity check
+console.log("Running parity check...");
+const parityResult = require("child_process").spawnSync(process.execPath, [
+  path.join(__dirname, "parity-check.js")
+], { encoding: "utf8" });
+if (parityResult.status !== 0) {
+  console.error("Parity check failed:");
+  console.error(parityResult.stdout);
+  console.error(parityResult.stderr);
+  process.exit(1);
+}
+console.log("Parity check: ok");
+
+// Run bench smoke test
+console.log("Running bench smoke test...");
+const benchResult = require("child_process").spawnSync(process.execPath, [
+  path.join(__dirname, "bench-ledger.js"),
+  "--rows", "5000",
+  "--budget-ms", "1000",
+  "--allow-slow"
+], { encoding: "utf8" });
+if (benchResult.status !== 0) {
+  console.error("Bench smoke test failed:");
+  console.error(benchResult.stdout);
+  console.error(benchResult.stderr);
+  process.exit(1);
+}
+console.log("Bench smoke test: ok");
+
 console.log("ok");

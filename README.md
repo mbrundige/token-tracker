@@ -298,7 +298,7 @@ printf '%s' '{"session_id":"demo","cwd":"'"$PWD"'","workspace":{"current_dir":"'
 
 ```text
 npx @mbrundige/token-tracker install [--all] [--cursor] [--claude] [--gemini] [--codex] [--agents] [--continue] [--statusline|--no-statusline]
-npx @mbrundige/token-tracker report
+npx @mbrundige/token-tracker report [--json]
 npx @mbrundige/token-tracker save --summary "..." [--project NAME] [--feature NAME]
 npx @mbrundige/token-tracker set-context --project NAME --feature NAME [--workspace PATH]
 npx @mbrundige/token-tracker set-feature NAME [--workspace PATH]
@@ -306,7 +306,17 @@ npx @mbrundige/token-tracker set-feature --clear [--workspace PATH]
 npx @mbrundige/token-tracker statusline   # reads status JSON from stdin
 npx @mbrundige/token-tracker prices pull [--source openrouter|llmcosthub|benchgecko]
 npx @mbrundige/token-tracker prices show
+npx @mbrundige/token-tracker parity
+npx @mbrundige/token-tracker bench [--rows N] [--index] [--budget-ms N]
 ```
+
+## Ledger index (hot path)
+
+Save/report/statusline used to re-parse the entire `history.jsonl` on every call. They now maintain an optional sidecar `~/.token-tracker/ledger-index.json` (JSONL stays the source of truth).
+
+- Rebuilds automatically when missing or stale
+- Statusline-equivalent work stays **sub-millisecond at 1M rows** in local benches (`token-tracker bench --rows 1000000 --index`)
+- Full scan without index still works; use `token-tracker parity` for fixture checks
 
 ## Manual install (from a clone)
 

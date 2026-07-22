@@ -1,0 +1,18 @@
+[
+  {
+    "project": "proj1",
+    "feature": "feature1",
+    "total_tokens": 4800,
+    "cost_usd": 0.0645,
+    "snapshots": 4,
+    "last_seen": "2024-01-01T10:20:00Z"
+  },
+  {
+    "project": "proj2",
+    "feature": "feature2",
+    "total_tokens": 2400,
+    "cost_usd": 0.0264,
+    "snapshots": 2,
+    "last_seen": "2024-01-01T10:25:00Z"
+  }
+]

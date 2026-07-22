@@ -8,6 +8,13 @@ const { loadPrices, formatCost, epochFeatureCost } = require("./pricing.js");
 const { priceRefreshOptions, ensureFreshPrices } = require("./pull-prices.js");
 const { paths } = require("./paths.js");
 const { createAnsi } = require("./ansi.js");
+const { 
+  resolveIndexPath, 
+  ensureIndex, 
+  reportFromIndex,
+  isIndexFresh,
+  loadIndex
+} = require("./ledger-index.js");
 
 const { historyPath: HISTORY_PATH, configPath: CONFIG_PATH, pricesPath: PRICES_PATH } = paths();
 
@@ -110,6 +117,21 @@ function featureBreakdown(rows, prices) {
   }
   out.sort((a, b) => b.total - a.total);
   return out;
+}
+
+function loadRowsFrom(path) {
+  if (!fs.existsSync(path)) return [];
+  const rows = [];
+  for (const line of fs.readFileSync(path, "utf8").split("\n")) {
+    if (!line.trim()) continue;
+    try {
+      const row = JSON.parse(line);
+      if (row && typeof row === "object" && !Array.isArray(row)) rows.push(row);
+    } catch {
+      // skip
+    }
+  }
+  return rows;
 }
 
 function dailyTotals(rows) {
@@ -265,10 +287,15 @@ function currentScope(config) {
 }
 
 async function main() {
-  const rows = loadRows();
+  const argv = process.argv.slice(2);
+  const jsonFlag = argv.includes("--json");
+  
   const config = loadConfig();
   const refresh = priceRefreshOptions(config);
-  if (refresh.autoPull) {
+  
+  // Skip price auto-pull noise for JSON output where possible, unless TOKEN_TRACKER_PRICES is set
+  const skipAutoPull = jsonFlag && !process.env.TOKEN_TRACKER_PRICES && fs.existsSync(PRICES_PATH);
+  if (!skipAutoPull && refresh.autoPull) {
     const ensured = await ensureFreshPrices({
       pricesPath: PRICES_PATH,
       source: refresh.source,
@@ -285,9 +312,60 @@ async function main() {
       );
     }
   }
+  
   const prices = loadPrices(PRICES_PATH);
+  
+  // Try to use index for faster feature breakdown
+  const indexPath = resolveIndexPath(HISTORY_PATH);
+  const index = loadIndex(indexPath);
+  let features;
+  
+  if (index && isIndexFresh(index, HISTORY_PATH)) {
+    // Use fast index path
+    features = reportFromIndex(index);
+  } else {
+    // Fallback to full scan, then rebuild index
+    const rows = loadRows();
+    features = featureBreakdown(rows, prices);
+    
+    // Rebuild index for future runs
+    try {
+      ensureIndex({ historyPath: HISTORY_PATH, pricesPath: PRICES_PATH, indexPath });
+    } catch (err) {
+      // Continue without index if rebuild fails
+      console.error(`Warning: failed to rebuild index: ${err.message}`);
+    }
+  }
+  
+  if (jsonFlag) {
+    // Output only JSON array of feature breakdown objects
+    const jsonOutput = features.map(f => ({
+      project: f.project,
+      feature: f.feature,
+      total_tokens: f.total_tokens || f.total,
+      cost_usd: f.cost_usd || f.costUsd,
+      snapshots: f.snapshots,
+      last_seen: f.last_seen,
+    }));
+    console.log(JSON.stringify(jsonOutput, null, 2));
+    return;
+  }
+  
+  // For human output, ensure features have the expected structure
+  const normalizedFeatures = features.map(f => ({
+    project: f.project,
+    feature: f.feature,
+    total: f.total_tokens || f.total,
+    costUsd: f.cost_usd || f.costUsd,
+    costApproximate: f.costApproximate || false,
+    costLockedDeltas: f.costLockedDeltas || 0,
+    costLiveDeltas: f.costLiveDeltas || 0,
+    snapshots: f.snapshots,
+    last_seen: f.last_seen,
+  }));
+  
   const scope = currentScope(config);
-  const features = featureBreakdown(rows, prices);
+  const rows = loadRows();
   const byDay = dailyTotals(rows);
 
   console.log(ansi.bold(ansi.cyan("Token Tracker Report")));
@@ -302,7 +380,7 @@ async function main() {
     `${ansi.dim("Current scope:")} ${ansi.cyan(`${scope.project}${scope.feature ? `/${scope.feature}` : ""}`)}`,
   );
   console.log("");
-  console.log(renderFeatureTable(features));
+  console.log(renderFeatureTable(normalizedFeatures));
   console.log("");
   console.log(renderHeatmap(byDay));
 }
@@ -314,4 +392,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { featureBreakdown, epochTotal, renderFeatureTable };
+module.exports = { featureBreakdown, epochTotal, renderFeatureTable, loadRowsFrom };

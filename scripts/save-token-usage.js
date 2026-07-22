@@ -6,6 +6,14 @@ const os = require("os");
 const path = require("path");
 const { loadPrices, computeCostDelta } = require("./pricing.js");
 const { paths, expand: expandHome } = require("./paths.js");
+const { 
+  resolveIndexPath, 
+  ensureIndex, 
+  applyAppend, 
+  lastFromIndex,
+  isIndexFresh,
+  loadIndex
+} = require("./ledger-index.js");
 
 const { historyPath: DEFAULT_HISTORY, pricesPath: DEFAULT_PRICES } = paths();
 const INT_FIELDS = ["prompt_tokens", "completion_tokens", "total_tokens"];
@@ -210,8 +218,21 @@ function lockSnapshotCost(snapshot, historyPath) {
   if (snapshot.total_tokens == null && snapshot.prompt_tokens == null) return snapshot;
   const pricesPath = process.env.TOKEN_TRACKER_PRICES ? expandHome(process.env.TOKEN_TRACKER_PRICES) : DEFAULT_PRICES;
   const prices = loadPrices(pricesPath);
-  const rows = loadHistoryRows(historyPath);
-  const previous = lastScopeSnapshot(rows, snapshot.project, snapshot.feature);
+  
+  // Try to use index for faster lookup of previous snapshot
+  const indexPath = resolveIndexPath(historyPath);
+  const index = loadIndex(indexPath);
+  let previous = null;
+  
+  if (index && isIndexFresh(index, historyPath)) {
+    // Use index for fast lookup
+    previous = lastFromIndex(index, snapshot.project, snapshot.feature);
+  } else {
+    // Fallback to full scan
+    const rows = loadHistoryRows(historyPath);
+    previous = lastScopeSnapshot(rows, snapshot.project, snapshot.feature);
+  }
+  
   const priced = computeCostDelta(previous, snapshot, prices);
   if (priced.costDeltaUsd != null) snapshot.cost_delta_usd = Number(priced.costDeltaUsd.toFixed(6));
   if (priced.estimatedCostUsd != null) {
@@ -226,6 +247,30 @@ function lockSnapshotCost(snapshot, historyPath) {
 function appendSnapshot(snapshot, historyPath) {
   fs.mkdirSync(path.dirname(historyPath), { recursive: true });
   fs.appendFileSync(historyPath, `${JSON.stringify(snapshot)}\n`, "utf8");
+  
+  // Update index after append
+  const pricesPath = process.env.TOKEN_TRACKER_PRICES ? expandHome(process.env.TOKEN_TRACKER_PRICES) : DEFAULT_PRICES;
+  const prices = loadPrices(pricesPath);
+  const indexPath = resolveIndexPath(historyPath);
+  
+  try {
+    // Ensure index exists first (rebuild if missing/stale)
+    let index = ensureIndex({ historyPath, pricesPath, indexPath });
+    
+    // Apply the new snapshot
+    index = applyAppend(index, snapshot, prices);
+    
+    // Update file metadata to reflect new state
+    const stat = fs.statSync(historyPath);
+    index.history_bytes = stat.size;
+    index.history_mtime_ms = stat.mtimeMs;
+    
+    // Write updated index
+    fs.writeFileSync(indexPath, JSON.stringify(index, null, 2), "utf8");
+  } catch (err) {
+    // If index update fails, continue - the full scan fallback will work
+    console.error(`Warning: failed to update index: ${err.message}`);
+  }
 }
 
 function main() {

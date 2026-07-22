@@ -3,5 +3,7 @@ __pycache__/
 .DS_Store
 .token-tracker/
 *.jsonl
+!testdata/**/*.jsonl
 node_modules/
 *.tgz
+rust/token-tracker-fast/target/
