@@ -1,0 +1,25 @@
+[package]
+name = "token-tracker"
+version = "0.9.0"
+edition = "2021"
+description = "Rust port of the token-tracker CLI (rewrite it in Rust, as a joke)."
+
+[[bin]]
+name = "token-tracker"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+# preserve_order: JS objects preserve insertion order; several ported
+# functions (buildPricesDocument's field order, install's JSON output field
+# order, config.json upgrades) rely on that for byte-for-byte-matching
+# output. Without this feature serde_json::Map is a BTreeMap and silently
+# re-sorts keys alphabetically.
+serde_json = { version = "1", features = ["preserve_order"] }
+chrono = { version = "0.4", features = ["clock"] }
+dirs = "5"
+ureq = { version = "2", features = ["json", "tls"] }
+anyhow = "1"
+
+[profile.release]
+opt-level = 2
