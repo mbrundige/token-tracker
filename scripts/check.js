@@ -345,6 +345,18 @@ assert.ok(pulled["claude opus"]);
 assert.strictEqual(pulled["claude opus"].output_per_million_usd, 25);
 assert.ok(!pulled["skip-me"]);
 
+// "gpt-4o" alias must resolve to the base model, never the "-mini" sibling,
+// regardless of which one the upstream API lists first (both tie on
+// versionScore, so array order previously decided the winner).
+const gpt4oRows = [
+  { id: "openai/gpt-4o", name: "OpenAI: GPT-4o", pricing: { prompt: "0.0000025", completion: "0.00001" } },
+  { id: "openai/gpt-4o-mini", name: "OpenAI: GPT-4o-mini", pricing: { prompt: "0.00000015", completion: "0.0000006" } },
+];
+const baseFirst = parseOpenRouter({ data: gpt4oRows });
+const miniFirst = parseOpenRouter({ data: [...gpt4oRows].reverse() });
+assert.strictEqual(baseFirst["gpt-4o"].input_per_million_usd, 2.5);
+assert.strictEqual(miniFirst["gpt-4o"].input_per_million_usd, 2.5);
+
 const doc = buildPricesDocument({
   source: "openrouter",
   url: "https://example.test",

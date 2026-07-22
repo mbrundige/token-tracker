@@ -59,7 +59,7 @@ const FAMILY_ALIASES = [
   { alias: "gpt-5.4", test: (id) => /^openai\/gpt-5\.4(?!-|pro)/.test(id) || id === "openai/gpt-5.4" },
   { alias: "gpt-5.3", test: (id) => /^openai\/gpt-5\.3/.test(id) },
   { alias: "gpt-5", test: (id) => /^openai\/gpt-5(?![\d.-])/.test(id) || id === "openai/gpt-5" },
-  { alias: "gpt-4o", test: (id) => /^openai\/gpt-4o/.test(id) },
+  { alias: "gpt-4o", test: (id) => id === "openai/gpt-4o" },
   { alias: "o3", test: (id) => /^openai\/o3(?!-)/.test(id) || id === "openai/o3" },
   { alias: "o4-mini", test: (id) => /^openai\/o4-mini/.test(id) },
   { alias: "claude opus", test: (id) => /^anthropic\/claude-opus-/.test(id) && !id.includes("fast") },
@@ -197,7 +197,7 @@ function parseLlmCostHub(payload) {
   const catalog = [];
   for (const row of rows) {
     const provider = String(row.provider_slug || row.provider || "").toLowerCase();
-    if (PROVIDER_ALLOW.size && provider && !PROVIDER_ALLOW.has(provider) && provider !== "google") continue;
+    if (PROVIDER_ALLOW.size && provider && !PROVIDER_ALLOW.has(provider)) continue;
     const input = Number(row.input_price_per_1m);
     const output = Number(row.output_price_per_1m);
     if (!Number.isFinite(input) || !Number.isFinite(output)) continue;
@@ -224,7 +224,7 @@ function parseBenchGecko(payload) {
   for (const row of rows) {
     const id = String(row.id || "").replace(/^~/, "");
     const provider = providerOf(id);
-    if (PROVIDER_ALLOW.size && !PROVIDER_ALLOW.has(provider) && provider !== "google") continue;
+    if (PROVIDER_ALLOW.size && !PROVIDER_ALLOW.has(provider)) continue;
     if (row.type && row.type !== "chat") continue;
     const input = Number(row.input_per_million);
     const output = Number(row.output_per_million);
