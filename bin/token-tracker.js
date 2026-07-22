@@ -455,6 +455,11 @@ function normalizeSetFeatureArgs(argv) {
     out.push("--feature", a);
     sawFeature = true;
   }
+  if (sawFeature && out.includes("--clear-feature")) {
+    console.error("token-tracker: set-feature cannot combine a feature name with --clear");
+    usage();
+    process.exit(2);
+  }
   if (!sawFeature && !out.includes("--clear-feature")) {
     console.error("token-tracker: set-feature requires a feature name (or --clear)");
     usage();

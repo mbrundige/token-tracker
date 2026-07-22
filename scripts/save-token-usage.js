@@ -153,6 +153,17 @@ function cleanSnapshot(payload) {
     snapshot[field] = parsed;
   }
 
+  if (
+    Number.isInteger(snapshot.prompt_tokens) &&
+    Number.isInteger(snapshot.completion_tokens) &&
+    Number.isInteger(snapshot.total_tokens) &&
+    snapshot.total_tokens !== snapshot.prompt_tokens + snapshot.completion_tokens
+  ) {
+    fail(
+      `total_tokens (${snapshot.total_tokens}) does not match prompt_tokens + completion_tokens (${snapshot.prompt_tokens + snapshot.completion_tokens})`
+    );
+  }
+
   if (snapshot.total_tokens == null) {
     if (Number.isInteger(snapshot.prompt_tokens) && Number.isInteger(snapshot.completion_tokens)) {
       snapshot.total_tokens = snapshot.prompt_tokens + snapshot.completion_tokens;

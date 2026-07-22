@@ -3,6 +3,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { spawnSync } = require("child_process");
 const { loadPrices, formatCost, epochFeatureCost } = require("./pricing.js");
 const { priceRefreshOptions, ensureFreshPrices } = require("./pull-prices.js");
 const { paths } = require("./paths.js");
@@ -151,7 +152,7 @@ function renderHeatmap(byDay, weeks = 16) {
   // End on today; start enough days back to fill `weeks` columns ending this week.
   const end = new Date(todayUtc);
   const start = new Date(todayUtc);
-  start.setUTCDate(start.getUTCDate() - (weeks * 7 - 1) - end.getUTCDay());
+  start.setUTCDate(start.getUTCDate() - (weeks - 1) * 7 - end.getUTCDay());
 
   const days = [];
   for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
@@ -238,11 +239,29 @@ function renderFeatureTable(features) {
   return lines.join("\n");
 }
 
+function resolveProject(config, cwd) {
+  if (process.env.TOKEN_TRACKER_PROJECT) return process.env.TOKEN_TRACKER_PROJECT;
+  if (config.projects && config.projects[cwd]) return String(config.projects[cwd]);
+  if (config.default_project) return String(config.default_project);
+  return path.basename(cwd);
+}
+
+function resolveFeature(config, cwd) {
+  if (process.env.TOKEN_TRACKER_FEATURE) return process.env.TOKEN_TRACKER_FEATURE;
+  if (config.features && config.features[cwd]) return String(config.features[cwd]);
+  if (config.default_feature) return String(config.default_feature);
+  try {
+    const result = spawnSync("git", ["-C", cwd, "branch", "--show-current"], { encoding: "utf8", timeout: 200 });
+    const branch = (result.stdout || "").trim();
+    return branch || null;
+  } catch {
+    return null;
+  }
+}
+
 function currentScope(config) {
   const cwd = process.cwd();
-  const project = (config.projects && config.projects[cwd]) || path.basename(cwd);
-  const feature = (config.features && config.features[cwd]) || null;
-  return { project, feature, cwd };
+  return { project: resolveProject(config, cwd), feature: resolveFeature(config, cwd), cwd };
 }
 
 async function main() {
